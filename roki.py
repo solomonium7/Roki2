@@ -27,7 +27,7 @@ def save_data():
 
 # Modules and their corresponding questions
 modules = {
-    1: "**Read the following theory:** https://discord.com/channels/1342982226916409354/1343626603682463796 Once you have read, answer this: How does the Fermi Paradox serve as a warning to Humanity? What are the greatest threats to Humanity's survival?",
+    1: "**Read the following theory:** https://discord.com/channels/1342982226916409354/1343542025139519519 Once you have read, answer this: How does the Fermi Paradox serve as a warning to Humanity? What are the greatest threats to Humanity's survival?",
     2: "**Read the following theory:** https://discord.com/channels/1342982226916409354/1343626603682463796 Once you have read, answer this: Why do humans live in conflicting realities? How does Strategic Reality shape the way people see the world, and why does Humanity need One Truth?",
     3: "**Read the following theory:** https://discord.com/channels/1342982226916409354/1345134323397034014 Once you have read, answer this: If Humanity is an organism, what is the role of the individual within it? How does the ‘self’ (sam/сам) bridge the gap between theory and action?",
     4: "**Read the following theory:** https://discord.com/channels/1342982226916409354/1345135557092835389 Once you have read, answer this: Explain how Perception, Values, and Purpose shape Strategic Reality. How should the Human Truth be structured to align Humanity with its survival? Why is it necessary to develop a universal set of values based on material reality?"
