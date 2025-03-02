@@ -7,6 +7,7 @@ TOKEN = os.getenv("TOKEN")
 GUILD_ID = 1342982226916409354  # Replace with your server ID
 MOD_CHANNEL_ID = 1345329325666205696  # Replace with your mod channel ID
 TARGET_CHANNEL_ID = 1343517836391219221  # Channel where reactions trigger bot
+ALLOWED_ROLE_ID = 134567890123456789  # Replace with the role ID that can use !promote
 
 # Load or initialize user data
 USER_DATA_FILE = "user_progress.json"
@@ -63,74 +64,46 @@ async def on_reaction_add(reaction, user):
         except discord.Forbidden:
             print(f"Can't DM {user.name}, they might have DMs off.")
 
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    print(f"Message detected from {message.author.name} in {message.channel}")
-    
-    user_id = str(message.author.id)
-    if isinstance(message.channel, discord.DMChannel) and user_id in user_data:
-        mod_channel = bot.get_channel(MOD_CHANNEL_ID)
-        
-        if mod_channel:
-            print(f"Forwarding message to mod channel: {MOD_CHANNEL_ID}")
-            forwarded_message = await mod_channel.send(
-                f"User {message.author.mention} (Stage {user_data[user_id]}) responded: {message.content}"
-            )
-
-            user_data[f"msg_{forwarded_message.id}"] = user_id  # Track message for replies
-            save_data()
-
-            await message.author.send("Your response has been forwarded to the Ideological Education Committee.")
-            print(f"Message forwarded successfully!")
-        else:
-            print("Mod channel not found!")
-    else:
-        print("Message not in DM or user not registered.")
-
-    await bot.process_commands(message)
-
-# Allow mods to respond to forwarded messages
-@bot.event
-async def on_message(message):
-    if message.author.bot:
-        return
-
-    user_id = str(message.author.id)
-    if isinstance(message.channel, discord.DMChannel) and user_id in user_data:
-        mod_channel = bot.get_channel(MOD_CHANNEL_ID)
-        if mod_channel:
-            await mod_channel.send(f"User {message.author.mention} (Stage {user_data[user_id]}) responded: {message.content}")
-            print(f"Message forwarded to mod channel: {MOD_CHANNEL_ID}")
-    
-    if message.channel.id == MOD_CHANNEL_ID and message.reference:
-        original_message = await message.channel.fetch_message(message.reference.message_id)
-        if original_message:
-            user_id = user_data.get(f"msg_{original_message.id}")
-            if user_id:
-                user = bot.get_user(int(user_id))
-                if user:
-                    await user.send(f"The committee has responded: {message.content}")
-                    print(f"Response sent to {user.name}: {message.content}")
-    
-    await bot.process_commands(message)
-
-# Command to promote a user to the next module
 @bot.command()
-@commands.has_permissions(administrator=True)
 async def promote(ctx, member: discord.Member, stage: int):
-    """Promote a user to the next module."""
+    """Promote a user to the next module, only if the command issuer has a specific role."""
+    allowed_role = discord.utils.get(ctx.author.roles, id=ALLOWED_ROLE_ID)
+    if not allowed_role:
+        await ctx.send(f"{ctx.author.mention}, you do not have permission to use this command.")
+        print(f"Promotion attempt denied for {ctx.author.name} - insufficient role.")
+        return
+    
     user_id = str(member.id)
+    print(f"Attempting to promote {member.name} (ID: {user_id}) to Stage {stage}")
     if user_id in user_data:
         user_data[user_id] = stage
         save_data()
-        await member.send(f"Congratulations! You have been promoted to Stage {stage}. Here is your new module.")
+        try:
+            await member.send(f"Congratulations! You have been promoted to Stage {stage}. Here is your new module.")
+            print(f"DM sent to {member.name} about promotion.")
+        except discord.Forbidden:
+            print(f"Cannot DM {member.name}, they might have DMs off.")
         await ctx.send(f"{member.mention} has been promoted to Stage {stage}.")
         print(f"{member.name} promoted to Stage {stage}")
     else:
         await ctx.send(f"{member.mention} has not started the course yet.")
         print(f"Promotion failed: {member.name} not found in user_data")
+
+# Command for moderators to send a response to a user
+@bot.command()
+async def respond(ctx, member: discord.Member, *, message: str):
+    """Allows moderators to respond to a user's inquiry."""
+    if not discord.utils.get(ctx.author.roles, id=ALLOWED_ROLE_ID):
+        await ctx.send(f"{ctx.author.mention}, you do not have permission to use this command.")
+        print(f"Respond attempt denied for {ctx.author.name} - insufficient role.")
+        return
+    
+    try:
+        await member.send(f"The committee has responded: {message}")
+        await ctx.send(f"Response sent to {member.mention}.")
+        print(f"Response sent to {member.name}: {message}")
+    except discord.Forbidden:
+        print(f"Cannot DM {member.name}, they might have DMs off.")
+        await ctx.send(f"Could not send a response to {member.mention}. They may have DMs disabled.")
 
 bot.run(TOKEN)
