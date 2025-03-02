@@ -98,6 +98,13 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    user_id = str(message.author.id)
+    if isinstance(message.channel, discord.DMChannel) and user_id in user_data:
+        mod_channel = bot.get_channel(MOD_CHANNEL_ID)
+        if mod_channel:
+            await mod_channel.send(f"User {message.author.mention} (Stage {user_data[user_id]}) responded: {message.content}")
+            print(f"Message forwarded to mod channel: {MOD_CHANNEL_ID}")
+    
     if message.channel.id == MOD_CHANNEL_ID and message.reference:
         original_message = await message.channel.fetch_message(message.reference.message_id)
         if original_message:
