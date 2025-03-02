@@ -2,8 +2,7 @@ import discord
 from discord.ext import commands
 import json
 import os
-
-TOKEN = "YOUR_BOT_TOKEN"  # Replace with your actual bot token
+TOKEN = os.getenv("TOKEN")
 GUILD_ID = 123456789  # Replace with your server ID
 MOD_CHANNEL_ID = 123456789  # Replace with your mod channel ID
 TARGET_CHANNEL_ID = 123456789  # Channel where reactions trigger bot
