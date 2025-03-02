@@ -7,7 +7,7 @@ TOKEN = os.getenv("TOKEN")
 GUILD_ID = 1342982226916409354  # Replace with your server ID
 MOD_CHANNEL_ID = 1345329325666205696  # Replace with your mod channel ID
 TARGET_CHANNEL_ID = 1343517836391219221  # Channel where reactions trigger bot
-ALLOWED_ROLE_ID = 134567890123456789  # Replace with the role ID that can use !promote
+ALLOWED_ROLE_ID = 1342997555612614747  # Replace with the role ID that can use !promote
 
 # Load or initialize user data
 USER_DATA_FILE = "user_progress.json"
