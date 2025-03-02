@@ -4,9 +4,9 @@ import json
 import os
 
 TOKEN = os.getenv("TOKEN")
-GUILD_ID = 123456789  # Replace with your server ID
-MOD_CHANNEL_ID = 123456789  # Replace with your mod channel ID
-TARGET_CHANNEL_ID = 123456789  # Channel where reactions trigger bot
+GUILD_ID = 1342982226916409354  # Replace with your server ID
+MOD_CHANNEL_ID = 1345329325666205696  # Replace with your mod channel ID
+TARGET_CHANNEL_ID = 1343517836391219221  # Channel where reactions trigger bot
 
 # Load or initialize user data
 USER_DATA_FILE = "user_progress.json"
@@ -92,41 +92,21 @@ async def on_message(message):
 
     await bot.process_commands(message)
 
-@bot.event
-async def on_message_edit(before, after):
-    await on_message(after)  # Handle edited messages like new messages
-
-@bot.event
-async def on_message_delete(message):
-    if message.channel.id == MOD_CHANNEL_ID:
-        msg_id = str(message.id)
-        if msg_id in user_data:
-            del user_data[msg_id]
-            save_data()
-
-@bot.command()
-@commands.has_permissions(administrator=True)
-async def promote(ctx, member: discord.Member, stage: int):
-    """Promote a user to the next module."""
-    user_id = str(member.id)
-    if user_id in user_data:
-        user_data[user_id] = stage
-        save_data()
-        await member.send(f"Congratulations! You have been promoted to Stage {stage}. Here is your new module.")
-        await ctx.send(f"{member.mention} has been promoted to Stage {stage}.")
-    else:
-        await ctx.send(f"{member.mention} has not started the course yet.")
-
+# Allow mods to respond to forwarded messages
 @bot.event
 async def on_message(message):
     if message.author.bot:
         return
 
-    if isinstance(message.channel, discord.DMChannel):
-        mod_channel = bot.get_channel(MOD_CHANNEL_ID)
-        if mod_channel:
-            await mod_channel.send(f"{message.author.mention} said: {message.content}")
-            print(f"Message forwarded to mod channel: {MOD_CHANNEL_ID}")
+    if message.channel.id == MOD_CHANNEL_ID and message.reference:
+        original_message = await message.channel.fetch_message(message.reference.message_id)
+        if original_message:
+            user_id = user_data.get(f"msg_{original_message.id}")
+            if user_id:
+                user = bot.get_user(int(user_id))
+                if user:
+                    await user.send(f"The committee has responded: {message.content}")
+                    print(f"Response sent to {user.name}: {message.content}")
     
     await bot.process_commands(message)
 
