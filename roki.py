@@ -68,20 +68,28 @@ async def on_message(message):
     if message.author.bot:
         return
 
+    print(f"Message detected from {message.author.name} in {message.channel}")
+    
     user_id = str(message.author.id)
     if isinstance(message.channel, discord.DMChannel) and user_id in user_data:
         mod_channel = bot.get_channel(MOD_CHANNEL_ID)
+        
         if mod_channel:
-            forwarded_message = await mod_channel.send(f"User {message.author.mention} (Stage {user_data[user_id]}) responded: {message.content}")
-            user_data[user_id] = user_data.get(user_id, 1)  # Ensure they exist in data
-            save_data()
-            await message.author.send("Your response has been forwarded to the Ideological Education Committee.")
+            print(f"Forwarding message to mod channel: {MOD_CHANNEL_ID}")
+            forwarded_message = await mod_channel.send(
+                f"User {message.author.mention} (Stage {user_data[user_id]}) responded: {message.content}"
+            )
 
-            # Store message ID for reply tracking
-            user_data[f"msg_{forwarded_message.id}"] = user_id
+            user_data[f"msg_{forwarded_message.id}"] = user_id  # Track message for replies
             save_data()
+
+            await message.author.send("Your response has been forwarded to the Ideological Education Committee.")
+            print(f"Message forwarded successfully!")
         else:
             print("Mod channel not found!")
+    else:
+        print("Message not in DM or user not registered.")
+
     await bot.process_commands(message)
 
 @bot.event
