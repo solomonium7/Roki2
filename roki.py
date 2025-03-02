@@ -117,4 +117,20 @@ async def on_message(message):
     
     await bot.process_commands(message)
 
+# Command to promote a user to the next module
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def promote(ctx, member: discord.Member, stage: int):
+    """Promote a user to the next module."""
+    user_id = str(member.id)
+    if user_id in user_data:
+        user_data[user_id] = stage
+        save_data()
+        await member.send(f"Congratulations! You have been promoted to Stage {stage}. Here is your new module.")
+        await ctx.send(f"{member.mention} has been promoted to Stage {stage}.")
+        print(f"{member.name} promoted to Stage {stage}")
+    else:
+        await ctx.send(f"{member.mention} has not started the course yet.")
+        print(f"Promotion failed: {member.name} not found in user_data")
+
 bot.run(TOKEN)
