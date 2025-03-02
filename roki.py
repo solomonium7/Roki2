@@ -2,6 +2,7 @@ import discord
 from discord.ext import commands
 import json
 import os
+
 TOKEN = os.getenv("TOKEN")
 GUILD_ID = 123456789  # Replace with your server ID
 MOD_CHANNEL_ID = 123456789  # Replace with your mod channel ID
@@ -18,7 +19,6 @@ else:
 bot = commands.Bot(command_prefix="!", intents=discord.Intents.all())
 
 # Save user progress
-
 def save_data():
     with open(USER_DATA_FILE, "w") as f:
         json.dump(user_data, f, indent=4)
@@ -27,15 +27,39 @@ def save_data():
 async def on_ready():
     print(f"Logged in as {bot.user}")
 
+# Command to send the reaction message and store its ID
+@bot.command()
+@commands.has_permissions(administrator=True)
+async def send_course_message(ctx):
+    message = await ctx.send("React to this message to start Module 1!")
+    with open("message_id.txt", "w") as f:
+        f.write(str(message.id))  # Save the message ID in a file
+    await message.add_reaction("✅")  # Add a reaction automatically
+
+# Reaction handler that checks for the stored message ID
 @bot.event
 async def on_reaction_add(reaction, user):
+    print(f"Reaction detected: {reaction.emoji} from {user.name} on message {reaction.message.id} in {reaction.message.channel.name}")
+    
     if user.bot:
         return
-    if reaction.message.channel.id == TARGET_CHANNEL_ID:
+    
+    try:
+        with open("message_id.txt", "r") as f:
+            stored_message_id = int(f.read().strip())
+    except FileNotFoundError:
+        print("No stored message ID found, ignoring reaction.")
+        return
+    
+    if reaction.message.id == stored_message_id:  # Only trigger on the correct message
+        print(f"Valid reaction on the correct message by {user.name}")
+        
         user_data[str(user.id)] = 1  # Start at Module 1
         save_data()
+
         try:
             await user.send("Hi! Here is Course Material for Module 1.\nRespond to me with an answer to the following question: [QUESTION]")
+            print(f"DM sent to {user.name}")
         except discord.Forbidden:
             print(f"Can't DM {user.name}, they might have DMs off.")
 
