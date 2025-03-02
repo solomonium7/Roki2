@@ -59,7 +59,7 @@ async def on_reaction_add(reaction, user):
         save_data()
 
         try:
-            await user.send("Hi! Here is Course Material for Module 1.\nRespond to me with an answer to the following question: [QUESTION]")
+            await user.send("Here is the theory for the crisis of humanity: https://discord.com/channels/1342982226916409354/1343542025139519519 .\nRespond to me with an answer to the following question: [lalala]")
             print(f"DM sent to {user.name}")
         except discord.Forbidden:
             print(f"Can't DM {user.name}, they might have DMs off.")
